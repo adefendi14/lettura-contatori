@@ -5,10 +5,7 @@ import {
   ArrowLeft,
   Building2,
   CheckCircle2,
-  FileDown,
-  FileUp,
   Loader2,
-  Menu,
   Save,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -24,14 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { AppMenu } from "@/components/app-menu";
 import { BrandMark } from "@/components/brand-mark";
 import { MeterList, MeterTable } from "@/components/meter-list";
 import { InstallPrompt } from "@/components/install-prompt";
@@ -280,61 +270,10 @@ export function LetturaApp() {
                 Salvato
               </span>
             )}
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-10"
-                  />
-                }
-              >
-                <Menu className="h-4 w-4 sm:mr-1.5" />
-                <span className="hidden sm:inline">Menu</span>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="w-80 min-w-72 max-w-[calc(100vw-1.5rem)]"
-              >
-                <DropdownMenuLabel className="text-sm font-medium text-foreground">
-                  Importa documento
-                </DropdownMenuLabel>
-                <p className="px-1.5 pb-2 text-xs leading-snug text-muted-foreground">
-                  ODS (foglio <span className="font-medium">25/26</span>),
-                  CSV o JSON. Per{" "}
-                  <span className="font-medium">acqua_riscaldamento.ods</span>{" "}
-                  si usa solo il foglio della gestione corrente: le 24/25
-                  restano precedenti, le 25/26 da compilare.
-                </p>
-                <DropdownMenuItem
-                  className="h-10"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <FileUp />
-                  Scegli file ODS / CSV / JSON
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel className="text-sm font-medium text-foreground">
-                  Esporta letture
-                </DropdownMenuLabel>
-                <DropdownMenuItem
-                  className="h-10"
-                  onClick={() => handleExport("csv")}
-                >
-                  <FileDown />
-                  Esporta CSV
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="h-10"
-                  onClick={() => handleExport("json")}
-                >
-                  <FileDown />
-                  Esporta JSON
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <AppMenu
+              onImport={() => fileInputRef.current?.click()}
+              onExport={handleExport}
+            />
           </div>
         </div>
       </header>
