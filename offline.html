@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Lettura Contatori</title>
+    <style>
+      :root { color-scheme: light; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+        background: #fafafa;
+        color: #181010;
+      }
+      main {
+        width: min(26rem, 100%);
+        padding: 2.5rem 1.5rem;
+        border-radius: 1.75rem;
+        background: #fff;
+        box-shadow: 0 0 0 1px rgba(24, 16, 16, 0.08);
+        text-align: center;
+      }
+      img { width: 64px; height: 64px; border-radius: 22%; }
+      p.kicker {
+        margin: 1rem 0 0;
+        font-size: 0.75rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #6e6e73;
+        font-weight: 500;
+      }
+      h1 {
+        margin: 0.5rem 0 0;
+        font-size: 1.35rem;
+        letter-spacing: -0.03em;
+        font-weight: 600;
+      }
+      p.copy {
+        margin: 0.75rem 0 0;
+        font-size: 0.9rem;
+        line-height: 1.55;
+        color: #6e6e73;
+      }
+      a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 1.5rem;
+        height: 3rem;
+        padding: 0 1.5rem;
+        border-radius: 1rem;
+        background: #181010;
+        color: #fafafa;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="./logo.png" alt="" />
+      <p class="kicker">Lettura Contatori</p>
+      <h1>Sei offline</h1>
+      <p class="copy">
+        Questa schermata non è in memoria. Dopo la prima apertura l’app e i tuoi
+        dati restano sul dispositivo: torna alla home, oppure riprova quando hai rete.
+      </p>
+      <a href="./">Vai alla home</a>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,2 @@
+:HL["/lettura-contatori/_next/static/chunks/276x6jh3f4-t1.css","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"/_not-found","param":null,"prefetchHints":4192,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}},"staleTime":300,"buildId":"AsKfwGM-0vS1Do83-1kQ-"}
