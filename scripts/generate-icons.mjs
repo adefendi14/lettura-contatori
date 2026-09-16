@@ -1,28 +1,10 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const BG = "#FAFAFA";
-const INK = "#181010";
-const DROP = "#3A6B8C";
-const FLAME = "#AF3026";
-
-function artwork() {
-  return `
-    <g fill="none" fill-rule="evenodd">
-      <rect x="48" y="48" width="416" height="416" rx="96" fill="${BG}"/>
-      <path fill="${DROP}" d="M256 118c-62 86-96 138-96 186a96 96 0 0 0 192 0c0-48-34-100-96-186Z"/>
-      <circle cx="256" cy="304" r="28" fill="${BG}" opacity="0.35"/>
-      <path fill="${FLAME}" d="M338 286c18 8 36 28 36 54 0 28-22 50-50 50s-48-22-48-50c0-22 16-40 28-54 4 14 18 24 32 24 6 0 12-2 18-6-8-4-16-10-16-18 0-12 12-22 22-32 6 10 14 20 14 32Z"/>
-    </g>
-  `;
-}
-
-function iconSvg(size) {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="${size}" height="${size}">${artwork()}</svg>`;
-}
+const svg = readFileSync(join(root, "public/logo.svg"));
 
 function pngToIco(png, width, height) {
   const header = Buffer.alloc(6);
@@ -42,7 +24,7 @@ function pngToIco(png, width, height) {
 }
 
 async function writePng(file, size) {
-  const buf = await sharp(Buffer.from(iconSvg(size)))
+  const buf = await sharp(svg)
     .resize(size, size)
     .png({ compressionLevel: 9 })
     .toBuffer();
@@ -51,7 +33,7 @@ async function writePng(file, size) {
   return buf;
 }
 
-writeFileSync(join(root, "public/favicon.svg"), iconSvg(32));
+writeFileSync(join(root, "public/favicon.svg"), svg);
 mkdirSync(join(root, "public/icons"), { recursive: true });
 
 await writePng(join(root, "public/icon-192.png"), 192);
@@ -66,4 +48,4 @@ await writePng(join(root, "src/app/apple-icon.png"), 180);
 const faviconPng = await writePng(join(root, "public/favicon-32.png"), 32);
 writeFileSync(join(root, "src/app/favicon.ico"), pngToIco(faviconPng, 32, 32));
 
-console.log("Icons written");
+console.log("Icons written from public/logo.svg");

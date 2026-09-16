@@ -16,6 +16,7 @@ const SHELL = [
   "./apple-touch-icon.png",
   "./favicon.svg",
   "./favicon-32.png",
+  "./logo.svg",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png",
