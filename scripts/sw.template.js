@@ -1,4 +1,4 @@
-const BASE_PATH = "";
+const BASE_PATH = "__BASE_PATH__";
 const CACHE_VERSION = "lettura-contatori-v2";
 const prefix = (path) => `${BASE_PATH}${path}`;
 

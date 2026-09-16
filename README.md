@@ -34,6 +34,24 @@ npm start
 
 Per testare l’offline completo (cache degli asset statici), usa la build di produzione dopo almeno una visita con rete attiva.
 
+## GitHub Pages
+
+Il deploy è automatico su push a `main` (workflow `.github/workflows/github-pages.yml`), come per **ExpnsTracker**:
+
+1. Crea su GitHub un repository (es. `LetturaContatori`) e collega questo progetto.
+2. In **Settings → Pages**, imposta **Source: GitHub Actions**.
+3. Esegui il push su `main`: la build usa `NEXT_PUBLIC_BASE_PATH` = `/<nome-repo>`.
+
+URL pubblico: `https://<utente-o-org>.github.io/<nome-repo>/`
+
+Build locale identica alla CI:
+
+```bash
+NEXT_PUBLIC_BASE_PATH=/LetturaContatori npm run build:pages
+```
+
+I file statici finiscono in `out/`. Il file `.nojekyll` è incluso così GitHub Pages serve correttamente `_next/`.
+
 ## Formato import
 
 CSV (separatore `;` o `,`) o JSON con colonne/campi riconoscibili, ad esempio:

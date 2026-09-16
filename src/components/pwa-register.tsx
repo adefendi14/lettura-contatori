@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { basePath, withBase } from "@/lib/site";
 
 export function PwaRegister() {
   useEffect(() => {
@@ -8,7 +9,8 @@ export function PwaRegister() {
 
     const register = async () => {
       try {
-        await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+        const scope = basePath ? `${basePath}/` : "/";
+        await navigator.serviceWorker.register(withBase("/sw.js"), { scope });
       } catch (err) {
         console.warn("Registrazione service worker non riuscita:", err);
       }

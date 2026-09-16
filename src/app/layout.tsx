@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { PwaRegister } from "@/components/pwa-register";
+import { withBase } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,15 +19,21 @@ export const metadata: Metadata = {
   title: "Lettura Contatori",
   description:
     "Gestione letture contatori condominiali per scala durante i sopralluoghi.",
-  manifest: "/manifest.json",
+  manifest: withBase("/manifest.json"),
   appleWebApp: {
     capable: true,
     title: "Lettura Contatori",
     statusBarStyle: "default",
   },
   icons: {
-    icon: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
-    apple: [{ url: "/icons/icon-192.png" }],
+    icon: [
+      {
+        url: withBase("/icons/icon-192.png"),
+        sizes: "192x192",
+        type: "image/png",
+      },
+    ],
+    apple: [{ url: withBase("/icons/icon-192.png") }],
   },
 };
 

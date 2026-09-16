@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --port 4318",
     "build": "next build",
+    "build:pages": "node scripts/prepare-pages.mjs && GITHUB_PAGES=true next build",
     "start": "next start --port 4318",
     "lint": "eslint"
   },
