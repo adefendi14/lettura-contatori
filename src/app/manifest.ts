@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import { basePath, withBase } from "@/lib/site";
 
+export const dynamic = "force-static";
+
 const home = `${basePath || ""}/`.replace(/\/\/+/g, "/") || "/";
 
 export default function manifest(): MetadataRoute.Manifest {
