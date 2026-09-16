@@ -5,8 +5,28 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, "..");
 
-const basePath = (process.env.NEXT_PUBLIC_BASE_PATH ?? "")
-  .replace(/\/$/, "");
+function githubPagesBasePath() {
+  if (process.env.GITHUB_PAGES !== "true") {
+    return "";
+  }
+  if (process.env.PAGES_BASE_PATH === "") {
+    return "";
+  }
+  if (process.env.PAGES_BASE_PATH) {
+    const value = process.env.PAGES_BASE_PATH;
+    return value.startsWith("/") ? value : `/${value}`;
+  }
+  if (process.env.NEXT_PUBLIC_BASE_PATH) {
+    return process.env.NEXT_PUBLIC_BASE_PATH.replace(/\/$/, "");
+  }
+  const repo = process.env.GITHUB_REPOSITORY?.split("/")[1];
+  if (!repo || repo.endsWith(".github.io")) {
+    return "";
+  }
+  return `/${repo}`;
+}
+
+const basePath = githubPagesBasePath();
 
 const template = fs.readFileSync(
   path.join(__dirname, "sw.template.js"),

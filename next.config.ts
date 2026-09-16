@@ -1,37 +1,37 @@
 import type { NextConfig } from "next";
 
-const basePath = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/$/, "");
-const isGithubPages = process.env.GITHUB_PAGES === "true";
+function githubPagesBasePath() {
+  if (process.env.GITHUB_PAGES !== "true") {
+    return "";
+  }
+  if (process.env.PAGES_BASE_PATH === "") {
+    return "";
+  }
+  if (process.env.PAGES_BASE_PATH) {
+    const value = process.env.PAGES_BASE_PATH;
+    return value.startsWith("/") ? value : `/${value}`;
+  }
+  if (process.env.NEXT_PUBLIC_BASE_PATH) {
+    return process.env.NEXT_PUBLIC_BASE_PATH.replace(/\/$/, "");
+  }
+  const repo = process.env.GITHUB_REPOSITORY?.split("/")[1];
+  if (!repo || repo.endsWith(".github.io")) {
+    return "";
+  }
+  return `/${repo}`;
+}
+
+const basePath = githubPagesBasePath();
 
 const nextConfig: NextConfig = {
-  ...(isGithubPages ? { output: "export" } : {}),
+  output: "export",
+  trailingSlash: true,
+  images: { unoptimized: true },
   basePath: basePath || undefined,
   assetPrefix: basePath || undefined,
-  trailingSlash: true,
-  images: {
-    unoptimized: true,
+  env: {
+    NEXT_PUBLIC_BASE_PATH: basePath,
   },
-  ...(isGithubPages
-    ? {}
-    : {
-        async headers() {
-          return [
-            {
-              source: "/sw.js",
-              headers: [
-                {
-                  key: "Cache-Control",
-                  value: "no-cache, no-store, must-revalidate",
-                },
-                {
-                  key: "Service-Worker-Allowed",
-                  value: "/",
-                },
-              ],
-            },
-          ];
-        },
-      }),
 };
 
 export default nextConfig;

@@ -36,19 +36,16 @@ Per testare l’offline completo (cache degli asset statici), usa la build di pr
 
 ## GitHub Pages
 
-Il deploy è automatico su push a `main` (workflow `.github/workflows/github-pages.yml`).
+Il deploy è lo stesso di **ExpnsTracker**: al push su `main` GitHub Actions pubblica `out/` sul branch `gh-pages` e **attiva Pages da sola** (niente click in Settings).
 
 Repository: [adefendi14/lettura-contatori](https://github.com/adefendi14/lettura-contatori)
-
-1. In **Settings → Pages**, imposta **Source: GitHub Actions** (solo la prima volta).
-2. Il push su `main` avvia la build con `NEXT_PUBLIC_BASE_PATH` = `/lettura-contatori`.
 
 URL pubblico: [https://adefendi14.github.io/lettura-contatori/](https://adefendi14.github.io/lettura-contatori/)
 
 Build locale identica alla CI:
 
 ```bash
-NEXT_PUBLIC_BASE_PATH=/lettura-contatori npm run build:pages
+npm run build:pages
 ```
 
 I file statici finiscono in `out/`. Il file `.nojekyll` è incluso così GitHub Pages serve correttamente `_next/`.
