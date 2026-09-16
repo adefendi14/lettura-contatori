@@ -10,9 +10,9 @@ export function BrandMark({
 }) {
   const compact = size === "sm";
   return (
-    // eslint-disable-next-line @next/next/no-img-element -- SVG del logo, non un'immagine raster Next
+    // eslint-disable-next-line @next/next/no-img-element -- logo raster identico al marchio fornito
     <img
-      src={withBase("/logo.svg")}
+      src={withBase("/logo.png")}
       alt=""
       width={compact ? 32 : 40}
       height={compact ? 32 : 40}
