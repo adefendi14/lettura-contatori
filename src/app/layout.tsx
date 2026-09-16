@@ -8,6 +8,7 @@ import "./globals.css";
 const outfit = Outfit({
   variable: "--font-outfit",
   subsets: ["latin", "latin-ext"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -18,31 +19,37 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Lettura Contatori",
   description:
-    "Gestione letture contatori condominiali per scala durante i sopralluoghi.",
-  manifest: withBase("/manifest.json"),
+    "Letture acqua calda e riscaldamento per scala, anche offline sul telefono.",
+  applicationName: "Lettura Contatori",
+  manifest: withBase("/manifest.webmanifest"),
   appleWebApp: {
     capable: true,
     title: "Lettura Contatori",
     statusBarStyle: "default",
   },
+  formatDetection: { telephone: false },
   icons: {
     icon: [
-      {
-        url: withBase("/icons/icon-192.png"),
-        sizes: "192x192",
-        type: "image/png",
-      },
+      { url: withBase("/favicon.svg"), type: "image/svg+xml" },
+      { url: withBase("/favicon-32.png"), sizes: "32x32", type: "image/png" },
+      { url: withBase("/icon-192.png"), sizes: "192x192", type: "image/png" },
+      { url: withBase("/icon-512.png"), sizes: "512x512", type: "image/png" },
     ],
-    apple: [{ url: withBase("/icons/icon-192.png") }],
+    apple: [{ url: withBase("/apple-touch-icon.png"), sizes: "180x180" }],
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-title": "Lettura Contatori",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#171717",
+  themeColor: "#FAFAFA",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  viewportFit: "cover",
+  colorScheme: "light",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

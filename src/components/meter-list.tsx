@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, CheckCircle2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Droplet, Flame } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   consumption,
@@ -121,7 +121,8 @@ function MeterFields({
 
   return (
     <div className="rounded-lg border border-border/70 bg-background/60 p-3">
-      <p className="text-sm font-medium text-foreground">
+      <p className="flex items-center gap-2 text-sm font-medium text-foreground">
+        <MeterTipoIcon tipo={record.tipo} />
         {TIPO_LABEL[record.tipo]}
       </p>
       <dl className="mt-2 grid grid-cols-2 gap-3 text-sm">
@@ -177,10 +178,20 @@ export function MeterTable({ records, onReadingChange }: MeterListProps) {
           <tr>
             <th className="px-4 py-3 font-medium">Alloggio</th>
             <th className="px-4 py-3 font-medium">Intestatario</th>
-            <th className="px-4 py-3 font-medium">Acqua 24/25</th>
+            <th className="px-4 py-3 font-medium">
+              <span className="inline-flex items-center gap-1.5">
+                <Droplet className="h-3.5 w-3.5 text-[#3A6B8C]" aria-hidden />
+                Acqua 24/25
+              </span>
+            </th>
             <th className="px-4 py-3 font-medium">Acqua 25/26</th>
             <th className="px-4 py-3 font-medium">Cons. acqua</th>
-            <th className="px-4 py-3 font-medium">Risc. 24/25</th>
+            <th className="px-4 py-3 font-medium">
+              <span className="inline-flex items-center gap-1.5">
+                <Flame className="h-3.5 w-3.5 text-[#AF3026]" aria-hidden />
+                Risc. 24/25
+              </span>
+            </th>
             <th className="px-4 py-3 font-medium">Risc. 25/26</th>
             <th className="px-4 py-3 font-medium">Cons. risc.</th>
           </tr>
@@ -231,6 +242,22 @@ export function MeterTable({ records, onReadingChange }: MeterListProps) {
         </tbody>
       </table>
     </div>
+  );
+}
+
+function MeterTipoIcon({ tipo }: { tipo: MeterRecord["tipo"] }) {
+  const acqua = tipo === "acqua";
+  const Icon = acqua ? Droplet : Flame;
+  return (
+    <span
+      className={cn(
+        "inline-flex h-7 w-7 items-center justify-center rounded-lg",
+        acqua ? "bg-[#3A6B8C]/12 text-[#3A6B8C]" : "bg-[#AF3026]/12 text-[#AF3026]"
+      )}
+      aria-hidden
+    >
+      <Icon className="h-4 w-4" fill="currentColor" strokeWidth={1.5} />
+    </span>
   );
 }
 

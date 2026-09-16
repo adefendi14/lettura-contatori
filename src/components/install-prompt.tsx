@@ -1,44 +1,46 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download, X } from "lucide-react";
+import { Download, Share, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-}
+import {
+  getInstallPrompt,
+  isInstalledPwa,
+  isIosSafari,
+  subscribeInstallPrompt,
+  subscribeInstalled,
+  triggerInstallPrompt,
+} from "@/lib/install-prompt";
 
 export function InstallPrompt() {
-  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(
-    null
-  );
+  const [canPrompt, setCanPrompt] = useState(false);
+  const [installed, setInstalled] = useState(false);
+  const [ios, setIos] = useState(false);
   const [dismissed, setDismissed] = useState(false);
-  const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- rilevamento display-mode client
-    setIsStandalone(
-      window.matchMedia("(display-mode: standalone)").matches ||
-        ("standalone" in navigator &&
-          (navigator as Navigator & { standalone?: boolean }).standalone ===
-            true)
+    // API browser: installazione e Safari iOS sono noti solo sul client
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- lettura client-only
+    setInstalled(isInstalledPwa());
+    setIos(isIosSafari());
+    setCanPrompt(Boolean(getInstallPrompt()));
+    const unsubPrompt = subscribeInstallPrompt(() =>
+      setCanPrompt(Boolean(getInstallPrompt()))
     );
-
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setDeferred(e as BeforeInstallPromptEvent);
+    const unsubInstalled = subscribeInstalled(() =>
+      setInstalled(isInstalledPwa())
+    );
+    return () => {
+      unsubPrompt();
+      unsubInstalled();
     };
-    window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
-  if (isStandalone || dismissed || !deferred) return null;
+  if (installed || dismissed) return null;
+  if (!canPrompt && !ios) return null;
 
   const install = async () => {
-    await deferred.prompt();
-    await deferred.userChoice;
-    setDeferred(null);
+    await triggerInstallPrompt();
   };
 
   return (
@@ -48,27 +50,34 @@ export function InstallPrompt() {
     >
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
-          <Download className="h-5 w-5 text-foreground" aria-hidden />
+          {ios ? (
+            <Share className="h-5 w-5 text-foreground" aria-hidden />
+          ) : (
+            <Download className="h-5 w-5 text-foreground" aria-hidden />
+          )}
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium text-foreground">
-            Installa Lettura Contatori
+            Aggiungi alla schermata Home
           </p>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            Aggiungi l&apos;app alla home per usarla offline durante i
-            sopralluoghi.
+            {ios
+              ? "Tocca Condividi, poi «Aggiungi a Home»: l’app resta usabile anche senza rete."
+              : "Installala sul telefono per usarla offline durante i sopralluoghi."}
           </p>
           <div className="mt-3 flex gap-2">
-            <Button type="button" size="sm" onClick={install}>
-              Installa
-            </Button>
+            {!ios && (
+              <Button type="button" size="sm" onClick={install}>
+                Installa
+              </Button>
+            )}
             <Button
               type="button"
               size="sm"
               variant="ghost"
               onClick={() => setDismissed(true)}
             >
-              Più tardi
+              {ios ? "Ho capito" : "Più tardi"}
             </Button>
           </div>
         </div>

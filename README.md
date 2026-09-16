@@ -1,15 +1,16 @@
 # Lettura Contatori
 
-Progressive Web App per la gestione delle **letture contatori condominiali** durante i sopralluoghi in scala (A, B, C). Interfaccia in italiano, ottimizzata per smartphone, con salvataggio locale e funzionamento offline dopo il primo caricamento.
+Progressive Web App per le **letture contatori condominiali** durante i sopralluoghi in scala (A, B, C). Interfaccia in italiano, pensata per lo smartphone: si installa sulla Home e resta usabile **offline** dopo la prima apertura.
 
 ## Funzionalità
 
-- Selezione scala e tabella/card per appartamento, codice contatore, intestatario, lettura precedente e nuova lettura
-- Calcolo immediato del consumo (differenza) con avviso se la nuova lettura è inferiore alla precedente
-- Dataset precaricato dal foglio **25/26** di `acqua_riscaldamento.ods` (Via Maffucci 53, gestione 2025/2026): acqua calda e riscaldamento per 93 appartamenti (scala A 20, B 57, C 16; 186 contatori)
-- Import ODS (usa solo il foglio `25-26`), CSV o JSON; esportazione di tutte le scale
+- Selezione scala e schede/tabella per appartamento: acqua calda e riscaldamento, lettura precedente, nuova lettura, consumo
+- Avviso se la nuova lettura è inferiore alla precedente
+- Dataset precaricato dal foglio **25/26** di `acqua_riscaldamento.ods` (Via Maffucci 53, gestione 2025/2026): 93 appartamenti (A 20, B 57, C 16; 186 contatori)
+- Import ODS (solo foglio `25-26`), CSV o JSON; export di **tutte** le scale
 - Auto-salvataggio in `localStorage`
-- PWA installabile: `manifest.json`, service worker, prompt di installazione
+- PWA: icona sulla Home, service worker che mette in cache tutto il sito, pagina di fallback se un URL non è in memoria
+- Su telefono, a sopralluogo (o scala) finito: barra fissa in basso con **Scarica file CSV**
 
 ## Requisiti
 
@@ -25,18 +26,22 @@ npm run dev
 
 Apri [http://localhost:4318](http://localhost:4318).
 
-## Build di produzione
+In sviluppo il service worker **non** si registra (come in ExpnsTracker), così il refresh resta immediato.
+
+## Build di produzione (offline + Home)
 
 ```bash
 npm run build
 npm start
 ```
 
-Per testare l’offline completo (cache degli asset statici), usa la build di produzione dopo almeno una visita con rete attiva.
+Poi apri [http://localhost:4318](http://localhost:4318), aggiungi l’app alla schermata Home e, dopo la prima visita, puoi chiudere la rete: home, scale e letture restano disponibili. I dati stanno sul dispositivo (`localStorage`).
+
+Su iPhone: Safari → Condividi → **Aggiungi a Home**.
 
 ## GitHub Pages
 
-Il deploy è lo stesso di **ExpnsTracker**: al push su `main` GitHub Actions pubblica `out/` sul branch `gh-pages` e **attiva Pages da sola** (niente click in Settings).
+Al push su `main` GitHub Actions pubblica `out/` sul branch `gh-pages` e attiva Pages.
 
 Repository: [adefendi14/lettura-contatori](https://github.com/adefendi14/lettura-contatori)
 
@@ -48,7 +53,7 @@ Build locale identica alla CI:
 npm run build:pages
 ```
 
-I file statici finiscono in `out/`. Il file `.nojekyll` è incluso così GitHub Pages serve correttamente `_next/`.
+Il file `.nojekyll` è incluso così GitHub Pages serve correttamente `_next/`. Il service worker usa URL relativi (`./…`) e funziona anche sotto `/lettura-contatori/`.
 
 ## Formato import
 
@@ -60,4 +65,4 @@ I file statici finiscono in `out/`. Il file `.nojekyll` è incluso così GitHub 
 
 ## Stack
 
-Next.js (App Router), TypeScript, Tailwind CSS, shadcn/ui.
+Next.js (App Router), TypeScript, Tailwind CSS, shadcn/ui, font Outfit.

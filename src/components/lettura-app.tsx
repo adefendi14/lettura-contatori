@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
+  Building2,
+  CheckCircle2,
   FileDown,
   FileUp,
   Loader2,
@@ -21,8 +23,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { BrandMark } from "@/components/brand-mark";
 import { MeterList, MeterTable } from "@/components/meter-list";
 import { InstallPrompt } from "@/components/install-prompt";
+import { ExportActions } from "@/components/export-actions";
 import {
   downloadFile,
   exportToCsv,
@@ -196,6 +200,20 @@ export function LetturaApp() {
     toast.success("Esportazione avviata");
   };
 
+  const onHome = state.selectedScala === null;
+  const allGroups = useMemo(
+    () => groupByApartment(state.records),
+    [state.records]
+  );
+  const allDone = useMemo(
+    () =>
+      allGroups.length > 0 &&
+      allGroups.every((g) =>
+        g.meters.every((m) => m.nuovaLettura !== null)
+      ),
+    [allGroups]
+  );
+
   if (!hydrated) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 py-24 text-muted-foreground">
@@ -205,35 +223,43 @@ export function LetturaApp() {
     );
   }
 
-  const onHome = state.selectedScala === null;
+  const scalaDone =
+    !onHome &&
+    apartmentGroups.length > 0 &&
+    completedCount === apartmentGroups.length &&
+    query.trim() === "";
+  const showMobileExport = scalaDone || (onHome && allDone);
 
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
-          <div className="min-w-0">
-            {!onHome && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="-ml-2 mb-0.5 h-9 gap-1"
-                onClick={backToHome}
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Scale
-              </Button>
-            )}
-            <h1 className="truncate text-lg font-semibold tracking-tight">
-              Lettura Contatori
-            </h1>
-            <p className="truncate text-xs text-muted-foreground">
-              {onHome
-                ? [state.condominio, state.gestione && `Gestione ${state.gestione}`]
-                    .filter(Boolean)
-                    .join(" · ") || "Sopralluogo condominiale"
-                : `Scala ${state.selectedScala} · ${completedCount}/${apartmentGroups.length} appartamenti`}
-            </p>
+          <div className="flex min-w-0 items-start gap-3">
+            {onHome && <BrandMark className="mt-0.5" />}
+            <div className="min-w-0">
+              {!onHome && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="-ml-2 mb-0.5 h-9 gap-1"
+                  onClick={backToHome}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Scale
+                </Button>
+              )}
+              <h1 className="truncate text-lg font-semibold tracking-tight">
+                Lettura Contatori
+              </h1>
+              <p className="truncate text-xs text-muted-foreground">
+                {onHome
+                  ? [state.condominio, state.gestione && `Gestione ${state.gestione}`]
+                      .filter(Boolean)
+                      .join(" · ") || "Sopralluogo condominiale"
+                  : `Scala ${state.selectedScala} · ${completedCount}/${apartmentGroups.length} appartamenti`}
+              </p>
+            </div>
           </div>
           <div className="flex shrink-0 items-center gap-1">
             {state.lastSavedAt && (
@@ -259,17 +285,22 @@ export function LetturaApp() {
               type="button"
               variant="outline"
               size="sm"
-              className="h-10"
+              className="hidden h-10 md:inline-flex"
               onClick={() => handleExport("csv")}
             >
-              <FileDown className="h-4 w-4 sm:mr-1.5" />
+              <FileDown className="h-4 w-4 md:mr-1.5" />
               <span className="hidden sm:inline">Esporta</span>
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-24">
+      <main
+        className={cn(
+          "mx-auto w-full max-w-5xl flex-1 px-4 py-6",
+          showMobileExport ? "pb-72 md:pb-10" : "pb-24"
+        )}
+      >
         {importError && (
           <div
             role="alert"
@@ -282,11 +313,13 @@ export function LetturaApp() {
         {onHome ? (
           <HomeView
             records={state.records}
+            allDone={allDone}
             onSelectScala={(scala) => {
               setQuery("");
               selectScala(scala);
             }}
             onImportClick={() => fileInputRef.current?.click()}
+            onExport={handleExport}
           />
         ) : (
           <>
@@ -307,21 +340,13 @@ export function LetturaApp() {
               records={filtered}
               onReadingChange={handleReadingChange}
             />
-            <div className="mt-6 flex flex-wrap gap-2">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => handleExport("json")}
-              >
-                Esporta JSON (tutte le scale)
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => handleExport("csv")}
-              >
-                Esporta CSV (tutte le scale)
-              </Button>
+            <div className="mt-6 hidden md:block">
+              <ExportActions
+                allDone={allDone}
+                scalaDone={scalaDone}
+                scala={state.selectedScala}
+                onExport={handleExport}
+              />
             </div>
           </>
         )}
@@ -397,19 +422,33 @@ export function LetturaApp() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <InstallPrompt />
+      {showMobileExport && (
+        <ExportActions
+          variant="sticky"
+          allDone={allDone}
+          scalaDone={scalaDone}
+          scala={state.selectedScala}
+          onExport={handleExport}
+        />
+      )}
+
+      {!showMobileExport && <InstallPrompt />}
     </>
   );
 }
 
 function HomeView({
   records,
+  allDone,
   onSelectScala,
   onImportClick,
+  onExport,
 }: {
   records: AppState["records"];
+  allDone: boolean;
   onSelectScala: (s: ScalaId) => void;
   onImportClick: () => void;
+  onExport: (format: "csv" | "json") => void;
 }) {
   const counts = SCALA_OPTIONS.map((scala) => {
     const groups = groupByApartment(
@@ -440,18 +479,48 @@ function HomeView({
               disabled={total === 0}
               onClick={() => onSelectScala(scala)}
               className={cn(
-                "flex min-h-[88px] flex-col items-start justify-center rounded-xl border border-border bg-card px-5 py-4 text-left shadow-sm transition-colors",
+                "flex min-h-[96px] items-center gap-4 rounded-xl border border-border bg-card px-5 py-4 text-left shadow-sm transition-colors",
                 "hover:border-foreground/20 hover:bg-muted/40 active:scale-[0.99]",
-                "disabled:cursor-not-allowed disabled:opacity-40"
+                "disabled:cursor-not-allowed disabled:opacity-40",
+                total > 0 &&
+                  done === total &&
+                  "border-emerald-200 bg-emerald-50/40"
               )}
             >
-              <span className="text-2xl font-semibold tracking-tight">
-                Scala {scala}
+              <span
+                className={cn(
+                  "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-muted text-foreground",
+                  total > 0 &&
+                    done === total &&
+                    "bg-emerald-100 text-emerald-700"
+                )}
+              >
+                {total > 0 && done === total ? (
+                  <CheckCircle2 className="h-6 w-6" aria-hidden />
+                ) : (
+                  <Building2 className="h-6 w-6" aria-hidden />
+                )}
               </span>
-              <span className="mt-1 text-sm text-muted-foreground">
-                {total === 0
-                  ? "Nessun appartamento"
-                  : `${done} / ${total} appartamenti`}
+              <span className="min-w-0 flex-1">
+                <span className="block text-2xl font-semibold tracking-tight">
+                  Scala {scala}
+                </span>
+                <span className="mt-1 block text-sm text-muted-foreground">
+                  {total === 0
+                    ? "Nessun appartamento"
+                    : `${done} / ${total} appartamenti`}
+                </span>
+                {total > 0 && (
+                  <span
+                    className="mt-2 block h-1.5 overflow-hidden rounded-full bg-muted"
+                    aria-hidden
+                  >
+                    <span
+                      className="block h-full rounded-full bg-[#3A6B8C]"
+                      style={{ width: `${Math.round((done / total) * 100)}%` }}
+                    />
+                  </span>
+                )}
               </span>
             </button>
           ))}
@@ -479,6 +548,17 @@ function HomeView({
           Scegli file ODS / CSV / JSON
         </Button>
       </section>
+
+      {!empty && (
+        <div className={cn(allDone && "hidden md:block")}>
+          <ExportActions
+            allDone={allDone}
+            scalaDone={false}
+            scala={null}
+            onExport={onExport}
+          />
+        </div>
+      )}
 
       {empty && (
         <p

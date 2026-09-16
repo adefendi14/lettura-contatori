@@ -1,27 +1,21 @@
 "use client";
 
 import { useEffect } from "react";
-import { basePath, withBase } from "@/lib/site";
+import { captureInstallPrompt } from "@/lib/install-prompt";
+import { withBase } from "@/lib/site";
 
 export function PwaRegister() {
   useEffect(() => {
+    captureInstallPrompt();
+    if (process.env.NODE_ENV === "development") return;
     if (!("serviceWorker" in navigator)) return;
 
-    const register = async () => {
-      try {
-        const scope = basePath ? `${basePath}/` : "/";
-        await navigator.serviceWorker.register(withBase("/sw.js"), { scope });
-      } catch (err) {
-        console.warn("Registrazione service worker non riuscita:", err);
-      }
-    };
-
-    if (document.readyState === "complete") {
-      register();
-    } else {
-      window.addEventListener("load", register, { once: true });
-    }
+    const script = withBase("/sw.js");
+    const scope = withBase("/");
+    void navigator.serviceWorker.register(script, {
+      scope,
+      updateViaCache: "none",
+    });
   }, []);
-
   return null;
 }

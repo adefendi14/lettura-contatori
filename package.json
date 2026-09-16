@@ -5,9 +5,10 @@
   "homepage": "https://adefendi14.github.io/lettura-contatori/",
   "scripts": {
     "dev": "next dev --port 4318",
-    "build": "node scripts/prepare-pages.mjs && next build",
-    "build:pages": "GITHUB_PAGES=true GITHUB_REPOSITORY=adefendi14/lettura-contatori node scripts/prepare-pages.mjs && GITHUB_PAGES=true GITHUB_REPOSITORY=adefendi14/lettura-contatori next build",
+    "build": "node scripts/prepare-pages.mjs && next build && node scripts/generate-sw.mjs",
+    "build:pages": "GITHUB_PAGES=true GITHUB_REPOSITORY=adefendi14/lettura-contatori npm run build",
     "start": "npx --yes serve@14 out -l 4318 --no-clipboard",
+    "icons": "node scripts/generate-icons.mjs",
     "lint": "eslint"
   },
   "dependencies": {
