@@ -8,6 +8,7 @@ import {
   FileDown,
   FileUp,
   Loader2,
+  Menu,
   Save,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -23,6 +24,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { BrandMark } from "@/components/brand-mark";
 import { MeterList, MeterTable } from "@/components/meter-list";
 import { InstallPrompt } from "@/components/install-prompt";
@@ -271,26 +280,61 @@ export function LetturaApp() {
                 Salvato
               </span>
             )}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-10"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <FileUp className="h-4 w-4 sm:mr-1.5" />
-              <span className="hidden sm:inline">Importa</span>
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="hidden h-10 md:inline-flex"
-              onClick={() => handleExport("csv")}
-            >
-              <FileDown className="h-4 w-4 md:mr-1.5" />
-              <span className="hidden sm:inline">Esporta</span>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-10"
+                  />
+                }
+              >
+                <Menu className="h-4 w-4 sm:mr-1.5" />
+                <span className="hidden sm:inline">Menu</span>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="w-80 min-w-72 max-w-[calc(100vw-1.5rem)]"
+              >
+                <DropdownMenuLabel className="text-sm font-medium text-foreground">
+                  Importa documento
+                </DropdownMenuLabel>
+                <p className="px-1.5 pb-2 text-xs leading-snug text-muted-foreground">
+                  ODS (foglio <span className="font-medium">25/26</span>),
+                  CSV o JSON. Per{" "}
+                  <span className="font-medium">acqua_riscaldamento.ods</span>{" "}
+                  si usa solo il foglio della gestione corrente: le 24/25
+                  restano precedenti, le 25/26 da compilare.
+                </p>
+                <DropdownMenuItem
+                  className="h-10"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <FileUp />
+                  Scegli file ODS / CSV / JSON
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-sm font-medium text-foreground">
+                  Esporta letture
+                </DropdownMenuLabel>
+                <DropdownMenuItem
+                  className="h-10"
+                  onClick={() => handleExport("csv")}
+                >
+                  <FileDown />
+                  Esporta CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="h-10"
+                  onClick={() => handleExport("json")}
+                >
+                  <FileDown />
+                  Esporta JSON
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
@@ -318,7 +362,6 @@ export function LetturaApp() {
               setQuery("");
               selectScala(scala);
             }}
-            onImportClick={() => fileInputRef.current?.click()}
             onExport={handleExport}
           />
         ) : (
@@ -441,13 +484,11 @@ function HomeView({
   records,
   allDone,
   onSelectScala,
-  onImportClick,
   onExport,
 }: {
   records: AppState["records"];
   allDone: boolean;
   onSelectScala: (s: ScalaId) => void;
-  onImportClick: () => void;
   onExport: (format: "csv" | "json") => void;
 }) {
   const counts = SCALA_OPTIONS.map((scala) => {
@@ -527,28 +568,6 @@ function HomeView({
         </div>
       </section>
 
-      <section className="rounded-xl border border-dashed border-border bg-muted/30 p-5">
-        <h2 className="text-sm font-medium text-foreground">
-          Importa documento precedente
-        </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Carica il file ODS (foglio <span className="font-medium">25/26</span>
-          ), oppure CSV/JSON. Per{" "}
-          <span className="font-medium">acqua_riscaldamento.ods</span> viene
-          usato solo il foglio della gestione corrente; le letture 24/25
-          restano precedenti, quelle 25/26 da compilare.
-        </p>
-        <Button
-          type="button"
-          className="mt-4 h-11 w-full sm:w-auto"
-          variant="secondary"
-          onClick={onImportClick}
-        >
-          <FileUp className="mr-2 h-4 w-4" />
-          Scegli file ODS / CSV / JSON
-        </Button>
-      </section>
-
       {!empty && (
         <div className={cn(allDone && "hidden md:block")}>
           <ExportActions
@@ -565,7 +584,7 @@ function HomeView({
           role="status"
           className="text-center text-sm text-muted-foreground"
         >
-          Nessun dato presente. Importa un file per iniziare.
+          Nessun dato presente. Apri Menu in alto per importare un file.
         </p>
       )}
     </div>
