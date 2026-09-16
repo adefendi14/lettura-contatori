@@ -6,7 +6,7 @@ Progressive Web App per la gestione delle **letture contatori condominiali** dur
 
 - Selezione scala e tabella/card per appartamento, codice contatore, intestatario, lettura precedente e nuova lettura
 - Calcolo immediato del consumo (differenza) con avviso se la nuova lettura è inferiore alla precedente
-- Dataset precaricato dal foglio **25/26** di `acqua_riscaldamento.ods` (Via Maffucci 53, gestione 2025/2026): acqua calda e riscaldamento per 93 appartamenti
+- Dataset precaricato dal foglio **25/26** di `acqua_riscaldamento.ods` (Via Maffucci 53, gestione 2025/2026): acqua calda e riscaldamento per 93 appartamenti (scala A 20, B 57, C 16; 186 contatori)
 - Import ODS (usa solo il foglio `25-26`), CSV o JSON; esportazione di tutte le scale
 - Auto-salvataggio in `localStorage`
 - PWA installabile: `manifest.json`, service worker, prompt di installazione
@@ -55,7 +55,7 @@ I file statici finiscono in `out/`. Il file `.nojekyll` è incluso così GitHub 
 
 ## Formato import
 
-- **ODS** (`acqua_riscaldamento.ods`): viene letto solo il foglio `25-26` (o `25/26`). Le colonne `24/25` sono la lettura precedente; `25/26` è la nuova lettura da compilare. Ogni alloggio ha due contatori: acqua calda e riscaldamento.
+- **ODS** (`acqua_riscaldamento.ods` o analogo): viene letto **solo** il foglio `25-26` (gestione 2025/2026). Gli altri fogli storici (`24-25`, `23-24`, …) sono ignorati. Colonne `24/25` → lettura precedente; colonne `25/26` → nuova lettura da compilare in sopralluogo (vuote nel file). Ogni alloggio ha due contatori: **Acqua calda** e **Riscaldamento**.
 - **CSV** (separatore `;` o `,`) o **JSON** con campi riconoscibili, ad esempio:
   `scala`, `appartamento`, `tipo`, `codiceContatore`, `intestatario`, `letturaPrecedente`, `nuovaLettura`
 
