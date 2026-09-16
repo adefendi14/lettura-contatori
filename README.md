@@ -53,7 +53,6 @@ I file statici finiscono in `out/`. Il file `.nojekyll` è incluso così GitHub 
 ## Formato import
 
 - **ODS** (`acqua_riscaldamento.ods` o analogo): viene letto **solo** il foglio `25-26` (gestione 2025/2026). Gli altri fogli storici (`24-25`, `23-24`, …) sono ignorati. Colonne `24/25` → lettura precedente; colonne `25/26` → nuova lettura da compilare in sopralluogo (vuote nel file). Ogni alloggio ha due contatori: **Acqua calda** e **Riscaldamento**.
-- File di prova con **tutte** le letture 25/26 già compilate: [`public/letture-25-26-completate.csv`](public/letture-25-26-completate.csv) (c’è anche la versione JSON). 93 appartamenti, acqua + riscaldamento, consumo calcolato.
 - **CSV** (separatore `;` o `,`) o **JSON** con campi riconoscibili, ad esempio:
   `scala`, `appartamento`, `tipo`, `codiceContatore`, `intestatario`, `letturaPrecedente`, `nuovaLettura`
 
