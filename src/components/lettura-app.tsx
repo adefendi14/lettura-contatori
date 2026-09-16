@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,8 +30,10 @@ import {
   mergeRecords,
   parseImportFile,
 } from "@/lib/import-export";
+import { parseOdsFile } from "@/lib/parse-ods";
 import {
   createInitialState,
+  groupByApartment,
   loadState,
   recordsForScala,
   saveState,
@@ -48,8 +51,12 @@ export function LetturaApp() {
   const [pendingImport, setPendingImport] = useState<{
     records: AppState["records"];
     warnings: string[];
+    condominio?: string;
+    gestione?: string;
+    sheetName?: string;
   } | null>(null);
-  const [importMode, setImportMode] = useState<ImportMode>("merge");
+  const [importMode, setImportMode] = useState<ImportMode>("replace");
+  const [query, setQuery] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -70,12 +77,27 @@ export function LetturaApp() {
 
   const filtered = useMemo(() => {
     if (!state?.selectedScala) return [];
-    return recordsForScala(state.records, state.selectedScala);
-  }, [state]);
+    const list = recordsForScala(state.records, state.selectedScala);
+    const q = query.trim().toLowerCase();
+    if (!q) return list;
+    return list.filter(
+      (r) =>
+        r.appartamento.toLowerCase().includes(q) ||
+        (r.intestatario ?? "").toLowerCase().includes(q) ||
+        (r.codice ?? "").toLowerCase().includes(q)
+    );
+  }, [state, query]);
+
+  const apartmentGroups = useMemo(
+    () => groupByApartment(filtered),
+    [filtered]
+  );
 
   const completedCount = useMemo(() => {
-    return filtered.filter((r) => r.nuovaLettura !== null).length;
-  }, [filtered]);
+    return apartmentGroups.filter((g) =>
+      g.meters.every((m) => m.nuovaLettura !== null)
+    ).length;
+  }, [apartmentGroups]);
 
   const selectScala = (scala: ScalaId) => {
     if (!state) return;
@@ -101,14 +123,33 @@ export function LetturaApp() {
 
   const handleFile = async (file: File) => {
     setImportError(null);
-    const text = await file.text();
-    const result = parseImportFile(text, file.name);
-    if ("message" in result) {
-      setImportError(result.message);
-      toast.error(result.message);
-      return;
+    const name = file.name.toLowerCase();
+    try {
+      if (name.endsWith(".ods")) {
+        const result = await parseOdsFile(await file.arrayBuffer());
+        if ("message" in result) {
+          setImportError(result.message);
+          toast.error(result.message);
+          return;
+        }
+        setImportMode("replace");
+        setPendingImport(result);
+        return;
+      }
+      const text = await file.text();
+      const result = parseImportFile(text, file.name);
+      if ("message" in result) {
+        setImportError(result.message);
+        toast.error(result.message);
+        return;
+      }
+      setImportMode("merge");
+      setPendingImport(result);
+    } catch {
+      const message = "Errore durante la lettura del file.";
+      setImportError(message);
+      toast.error(message);
     }
-    setPendingImport(result);
   };
 
   const confirmImport = () => {
@@ -123,6 +164,8 @@ export function LetturaApp() {
       records: merged,
       dataSource: "import",
       selectedScala: state.selectedScala,
+      condominio: pendingImport.condominio ?? state.condominio,
+      gestione: pendingImport.gestione ?? state.gestione,
     });
     if (pendingImport.warnings.length) {
       toast.message("Import completato con avvisi", {
@@ -167,7 +210,7 @@ export function LetturaApp() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
           <div className="min-w-0">
             {!onHome && (
               <Button
@@ -184,10 +227,12 @@ export function LetturaApp() {
             <h1 className="truncate text-lg font-semibold tracking-tight">
               Lettura Contatori
             </h1>
-            <p className="text-xs text-muted-foreground">
+            <p className="truncate text-xs text-muted-foreground">
               {onHome
-                ? "Sopralluogo condominiale"
-                : `Scala ${state.selectedScala} · ${completedCount}/${filtered.length} completate`}
+                ? [state.condominio, state.gestione && `Gestione ${state.gestione}`]
+                    .filter(Boolean)
+                    .join(" · ") || "Sopralluogo condominiale"
+                : `Scala ${state.selectedScala} · ${completedCount}/${apartmentGroups.length} appartamenti`}
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-1">
@@ -224,7 +269,7 @@ export function LetturaApp() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 pb-24">
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-24">
         {importError && (
           <div
             role="alert"
@@ -237,11 +282,23 @@ export function LetturaApp() {
         {onHome ? (
           <HomeView
             records={state.records}
-            onSelectScala={selectScala}
+            onSelectScala={(scala) => {
+              setQuery("");
+              selectScala(scala);
+            }}
             onImportClick={() => fileInputRef.current?.click()}
           />
         ) : (
           <>
+            <div className="mb-4">
+              <Input
+                type="search"
+                placeholder="Cerca alloggio o intestatario…"
+                className="h-12 text-base"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </div>
             <MeterList
               records={filtered}
               onReadingChange={handleReadingChange}
@@ -273,7 +330,7 @@ export function LetturaApp() {
       <input
         ref={fileInputRef}
         type="file"
-        accept=".csv,.json,text/csv,application/json"
+        accept=".csv,.json,.ods,text/csv,application/json,application/vnd.oasis.opendocument.spreadsheet"
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0];
@@ -290,7 +347,12 @@ export function LetturaApp() {
           <AlertDialogHeader>
             <AlertDialogTitle>Conferma importazione</AlertDialogTitle>
             <AlertDialogDescription>
-              Trovati {pendingImport?.records.length ?? 0} contatori nel file.
+              {pendingImport?.sheetName
+                ? `Foglio «${pendingImport.sheetName}»: `
+                : ""}
+              {pendingImport
+                ? `${groupByApartment(pendingImport.records).length} appartamenti, ${pendingImport.records.length} contatori (acqua calda e riscaldamento).`
+                : ""}{" "}
               Scegli come applicare l&apos;importazione.
             </AlertDialogDescription>
             <div className="flex flex-col gap-2 py-2">
@@ -349,13 +411,18 @@ function HomeView({
   onSelectScala: (s: ScalaId) => void;
   onImportClick: () => void;
 }) {
-  const counts = SCALA_OPTIONS.map((scala) => ({
-    scala,
-    total: records.filter((r) => r.scala === scala).length,
-    done: records.filter(
-      (r) => r.scala === scala && r.nuovaLettura !== null
-    ).length,
-  }));
+  const counts = SCALA_OPTIONS.map((scala) => {
+    const groups = groupByApartment(
+      records.filter((r) => r.scala === scala)
+    );
+    return {
+      scala,
+      total: groups.length,
+      done: groups.filter((g) =>
+        g.meters.every((m) => m.nuovaLettura !== null)
+      ).length,
+    };
+  });
 
   const empty = records.length === 0;
 
@@ -383,8 +450,8 @@ function HomeView({
               </span>
               <span className="mt-1 text-sm text-muted-foreground">
                 {total === 0
-                  ? "Nessun contatore"
-                  : `${done} / ${total} letture`}
+                  ? "Nessun appartamento"
+                  : `${done} / ${total} appartamenti`}
               </span>
             </button>
           ))}
@@ -396,9 +463,11 @@ function HomeView({
           Importa documento precedente
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Carica un file CSV o JSON con appartamenti, codici contatore e letture
-          precedenti. I dati di esempio restano disponibili finché non
-          sostituisci l&apos;elenco.
+          Carica il file ODS (foglio <span className="font-medium">25/26</span>
+          ), oppure CSV/JSON. Per{" "}
+          <span className="font-medium">acqua_riscaldamento.ods</span> viene
+          usato solo il foglio della gestione corrente; le letture 24/25
+          restano precedenti, quelle 25/26 da compilare.
         </p>
         <Button
           type="button"
@@ -407,7 +476,7 @@ function HomeView({
           onClick={onImportClick}
         >
           <FileUp className="mr-2 h-4 w-4" />
-          Scegli file CSV / JSON
+          Scegli file ODS / CSV / JSON
         </Button>
       </section>
 

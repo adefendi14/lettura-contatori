@@ -6,8 +6,8 @@ Progressive Web App per la gestione delle **letture contatori condominiali** dur
 
 - Selezione scala e tabella/card per appartamento, codice contatore, intestatario, lettura precedente e nuova lettura
 - Calcolo immediato del consumo (differenza) con avviso se la nuova lettura è inferiore alla precedente
-- Dataset di esempio precaricato (scale A, B, C)
-- Import CSV/JSON (unione o sostituzione) ed esportazione di tutte le scale
+- Dataset precaricato dal foglio **25/26** di `acqua_riscaldamento.ods` (Via Maffucci 53, gestione 2025/2026): acqua calda e riscaldamento per 93 appartamenti
+- Import ODS (usa solo il foglio `25-26`), CSV o JSON; esportazione di tutte le scale
 - Auto-salvataggio in `localStorage`
 - PWA installabile: `manifest.json`, service worker, prompt di installazione
 
@@ -36,27 +36,28 @@ Per testare l’offline completo (cache degli asset statici), usa la build di pr
 
 ## GitHub Pages
 
-Il deploy è automatico su push a `main` (workflow `.github/workflows/github-pages.yml`), come per **ExpnsTracker**:
+Il deploy è automatico su push a `main` (workflow `.github/workflows/github-pages.yml`).
 
-1. Crea su GitHub un repository (es. `LetturaContatori`) e collega questo progetto.
-2. In **Settings → Pages**, imposta **Source: GitHub Actions**.
-3. Esegui il push su `main`: la build usa `NEXT_PUBLIC_BASE_PATH` = `/<nome-repo>`.
+Repository: [adefendi14/lettura-contatori](https://github.com/adefendi14/lettura-contatori)
 
-URL pubblico: `https://<utente-o-org>.github.io/<nome-repo>/`
+1. In **Settings → Pages**, imposta **Source: GitHub Actions** (solo la prima volta).
+2. Il push su `main` avvia la build con `NEXT_PUBLIC_BASE_PATH` = `/lettura-contatori`.
+
+URL pubblico: [https://adefendi14.github.io/lettura-contatori/](https://adefendi14.github.io/lettura-contatori/)
 
 Build locale identica alla CI:
 
 ```bash
-NEXT_PUBLIC_BASE_PATH=/LetturaContatori npm run build:pages
+NEXT_PUBLIC_BASE_PATH=/lettura-contatori npm run build:pages
 ```
 
 I file statici finiscono in `out/`. Il file `.nojekyll` è incluso così GitHub Pages serve correttamente `_next/`.
 
 ## Formato import
 
-CSV (separatore `;` o `,`) o JSON con colonne/campi riconoscibili, ad esempio:
-
-`scala`, `appartamento`, `codiceContatore`, `intestatario`, `letturaPrecedente`, `nuovaLettura`
+- **ODS** (`acqua_riscaldamento.ods`): viene letto solo il foglio `25-26` (o `25/26`). Le colonne `24/25` sono la lettura precedente; `25/26` è la nuova lettura da compilare. Ogni alloggio ha due contatori: acqua calda e riscaldamento.
+- **CSV** (separatore `;` o `,`) o **JSON** con campi riconoscibili, ad esempio:
+  `scala`, `appartamento`, `tipo`, `codiceContatore`, `intestatario`, `letturaPrecedente`, `nuovaLettura`
 
 È accettato anche un array JSON di oggetti o un oggetto con proprietà `records` / `meters` / `data`.
 

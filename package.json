@@ -2,6 +2,7 @@
   "name": "lettura-contatori",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://adefendi14.github.io/lettura-contatori/",
   "scripts": {
     "dev": "next dev --port 4318",
     "build": "next build",
@@ -13,6 +14,7 @@
     "@base-ui/react": "^1.8.0",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.3.0",
+    "jszip": "^3.10.2",
     "lucide-react": "^1.46.0",
     "next": "16.3.5",
     "next-themes": "^0.4.6",

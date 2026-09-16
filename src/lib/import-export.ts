@@ -1,4 +1,5 @@
-import type { ImportMode, MeterRecord, ScalaId } from "./types";
+import type { ImportMode, MeterRecord, MeterTipo, ScalaId } from "./types";
+import { TIPO_LABEL } from "./types";
 
 const SCALA_VALUES: ScalaId[] = ["A", "B", "C"];
 
@@ -44,18 +45,27 @@ function parseNumber(value: unknown): number | null {
 }
 
 function rowToRecord(
-  row: Record<string, unknown>,
-  index: number
+  row: Record<string, unknown>
 ): MeterRecord | null {
   const scala = normalizeScala(
     pickField(row, ["scala", "stairwell", "scale"])
   );
   const appartamento = pickField(row, [
     "appartamento",
+    "alloggio",
+    "all",
     "apt",
     "apartment",
     "unit",
   ]);
+  const tipoRaw = pickField(row, ["tipo", "tipocontatore", "servizio"]);
+  const tipo: MeterTipo | null = (() => {
+    const t = String(tipoRaw ?? "").toLowerCase();
+    if (t.includes("risc") || t.includes("heat")) return "riscaldamento";
+    if (t.includes("acqua") || t.includes("water") || t.includes("calda"))
+      return "acqua";
+    return null;
+  })();
   const codice = pickField(row, [
     "codicecontatore",
     "codice_contatore",
@@ -64,7 +74,15 @@ function rowToRecord(
     "metercode",
     "contatore",
   ]);
-  if (!scala || !appartamento || !codice) return null;
+  if (!scala || !appartamento) return null;
+  const resolvedTipo: MeterTipo =
+    tipo ??
+    (String(codice ?? "").toLowerCase().includes("risc")
+      ? "riscaldamento"
+      : "acqua");
+  const codiceLabel = codice
+    ? String(codice)
+    : TIPO_LABEL[resolvedTipo];
 
   const precedente =
     parseNumber(
@@ -89,22 +107,27 @@ function rowToRecord(
 
   const intestatario = pickField(row, [
     "intestatario",
+    "nominativo",
     "nomeintestatario",
     "nome_intestatario",
     "name",
     "holder",
   ]);
 
+  const note = pickField(row, ["note", "nota", "avviso"]);
+
   const id =
     pickField(row, ["id"])?.toString() ||
-    `${scala}-${String(appartamento)}-${String(codice)}-${index}`;
+    `${scala}-${String(appartamento)}-${resolvedTipo}`;
 
   return {
     id: String(id),
     scala,
     appartamento: String(appartamento),
-    codiceContatore: String(codice),
+    codiceContatore: codiceLabel,
+    tipo: resolvedTipo,
     intestatario: intestatario ? String(intestatario) : undefined,
+    note: note ? String(note) : undefined,
     letturaPrecedente: precedente,
     nuovaLettura: nuova,
   };
@@ -203,7 +226,7 @@ export function parseImportFile(
   const records: MeterRecord[] = [];
   const warnings: string[] = [];
   rows.forEach((row, index) => {
-    const record = rowToRecord(row, index);
+    const record = rowToRecord(row);
     if (record) {
       if (!SCALA_VALUES.includes(record.scala)) {
         warnings.push(`Riga ${index + 1}: scala non valida, ignorata.`);
@@ -254,15 +277,17 @@ export function mergeRecords(
 }
 
 function recordKey(r: MeterRecord): string {
-  return `${r.scala}|${r.appartamento}|${r.codiceContatore}`;
+  return `${r.scala}|${r.appartamento}|${r.tipo}`;
 }
 
 export function exportToJson(records: MeterRecord[]): string {
   const payload = records.map((r) => ({
     scala: r.scala,
     appartamento: r.appartamento,
+    tipo: r.tipo,
     codiceContatore: r.codiceContatore,
     intestatario: r.intestatario ?? "",
+    note: r.note ?? "",
     letturaPrecedente: r.letturaPrecedente,
     nuovaLettura: r.nuovaLettura,
     consumo:
@@ -275,8 +300,10 @@ export function exportToCsv(records: MeterRecord[]): string {
   const headers = [
     "scala",
     "appartamento",
+    "tipo",
     "codiceContatore",
     "intestatario",
+    "note",
     "letturaPrecedente",
     "nuovaLettura",
     "consumo",
@@ -288,8 +315,10 @@ export function exportToCsv(records: MeterRecord[]): string {
     const row = [
       r.scala,
       r.appartamento,
+      r.tipo,
       r.codiceContatore,
       r.intestatario ?? "",
+      r.note ?? "",
       r.letturaPrecedente,
       r.nuovaLettura ?? "",
       consumo,
