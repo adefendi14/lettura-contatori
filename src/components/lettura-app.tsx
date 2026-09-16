@@ -9,7 +9,7 @@ import {
   Save,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   AlertDialog,
@@ -39,7 +39,7 @@ import {
   saveState,
   updateRecordReading,
 } from "@/lib/storage";
-import type { AppState, ImportMode, ScalaId } from "@/lib/types";
+import { withBase } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 const SCALA_OPTIONS: ScalaId[] = ["A", "B", "C"];
@@ -469,15 +469,28 @@ function HomeView({
           usato solo il foglio della gestione corrente; le letture 24/25
           restano precedenti, quelle 25/26 da compilare.
         </p>
-        <Button
-          type="button"
-          className="mt-4 h-11 w-full sm:w-auto"
-          variant="secondary"
-          onClick={onImportClick}
-        >
-          <FileUp className="mr-2 h-4 w-4" />
-          Scegli file ODS / CSV / JSON
-        </Button>
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          <Button
+            type="button"
+            className="h-11 w-full sm:w-auto"
+            variant="secondary"
+            onClick={onImportClick}
+          >
+            <FileUp className="mr-2 h-4 w-4" />
+            Scegli file ODS / CSV / JSON
+          </Button>
+          <a
+            href={withBase("/letture-25-26-completate.csv")}
+            download
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              "h-11 w-full sm:w-auto"
+            )}
+          >
+            <FileDown className="mr-2 h-4 w-4" />
+            Esempio 25/26 compilato (CSV)
+          </a>
+        </div>
       </section>
 
       {empty && (
